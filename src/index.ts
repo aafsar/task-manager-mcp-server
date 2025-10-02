@@ -19,7 +19,7 @@ import {
   getTaskStats,
   clearCompleted,
 } from "./tools.js";
-import { loadTasks } from "./storage.js";
+import { loadTasks } from "./storage-router.js";
 
 // Tool definitions with JSON Schema
 const TOOLS = [

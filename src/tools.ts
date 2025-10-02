@@ -9,7 +9,7 @@ import {
   TaskIdSchema,
   SearchSchema,
 } from "./types.js";
-import { loadTasks, saveTasks, formatTask } from "./storage.js";
+import { loadTasks, saveTasks, formatTask } from "./storage-router.js";
 
 /**
  * Create a new task
