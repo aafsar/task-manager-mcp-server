@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  task-manager-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task-manager-mcp
+    environment:
+      - NODE_ENV=production
+      - DATA_DIR=/app/data
+    volumes:
+      # Persist task data
+      - task-data:/app/data
+    # For stdio transport, use:
+    stdin_open: true
+    tty: true
+    # If using HTTP transport in future:
+    # ports:
+    #   - "3000:3000"
+
+volumes:
+  task-data:
+    driver: local

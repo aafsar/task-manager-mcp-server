@@ -1,0 +1,41 @@
+# Project-specific
+_instructions/
+.references/
+CLAUDE.md
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Data
+data/
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+
+# Documentation (will be in repo but not needed in image)
+README.md
