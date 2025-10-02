@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import {
   createTask,
@@ -189,17 +196,18 @@ const server = new Server(
     capabilities: {
       tools: {},
       resources: {},
+      prompts: {},
     },
   }
 );
 
 // Handle tool listing
-server.setRequestHandler("tools/list" as any, async () => ({
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: TOOLS,
 }));
 
 // Handle tool execution
-server.setRequestHandler("tools/call" as any, async (request: any) => {
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
@@ -234,11 +242,25 @@ server.setRequestHandler("tools/call" as any, async (request: any) => {
   } catch (error) {
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
+      // Format validation errors with proper quoting
+      const formattedErrors = error.errors.map((e) => {
+        let message = e.message;
+
+        // If the error includes a received value, quote it properly
+        if (e.code === "invalid_enum_value" && "received" in e) {
+          const received = e.received;
+          const expected = "options" in e ? e.options : [];
+          message = `Invalid value '${received}'. Expected one of: ${expected.map((v: any) => `'${v}'`).join(", ")}`;
+        }
+
+        return message;
+      });
+
       return {
         content: [
           {
             type: "text",
-            text: `❌ Validation error: ${error.errors.map((e) => e.message).join(", ")}`,
+            text: `❌ Validation error: ${formattedErrors.join(", ")}`,
           },
         ],
       };
@@ -256,8 +278,13 @@ server.setRequestHandler("tools/call" as any, async (request: any) => {
   }
 });
 
+// Handle prompt listing (we don't have any prompts, return empty list)
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: [],
+}));
+
 // Handle resource listing
-server.setRequestHandler("resources/list" as any, async () => ({
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
   resources: [
     {
       uri: "tasks://list",
@@ -269,7 +296,7 @@ server.setRequestHandler("resources/list" as any, async () => ({
 }));
 
 // Handle resource reading
-server.setRequestHandler("resources/read" as any, async (request: any) => {
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
   const { uri } = request.params;
 
   if (uri === "tasks://list") {
